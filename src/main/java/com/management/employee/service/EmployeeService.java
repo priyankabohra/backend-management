@@ -1,10 +1,7 @@
 package com.management.employee.service;
 
-import java.util.ArrayList;
-import java.util.List;
 import com.management.employee.Repository.EmployeeRepository;
 import com.management.employee.model.Employee;
-import com.management.employee.rest.json.EmployeeJson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
