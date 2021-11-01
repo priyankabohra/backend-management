@@ -1,59 +1,51 @@
 package com.management.employee.rest.resource;
 
 
-import com.management.employee.Repository.EmployeeRepository;
 import com.management.employee.model.Employee;
 import com.management.employee.rest.json.EmployeeJson;
 import com.management.employee.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin("http://localhost:3000")
+@CrossOrigin
 @RestController
+@RequestMapping("/api")
 public class EmployeeResource {
 
     @Autowired
-    EmployeeRepository employeeRepository;
-    @Autowired
-    EmployeeService employeeService;
+    private EmployeeService employeeService;
 
     @GetMapping("/employees")
-    private List<Employee> getAllEmployee() {
-        return employeeService.getAllEmployee();
+    private ResponseEntity<List<Employee>> getAllEmployee() {
+        return new ResponseEntity<>(employeeService.getAllEmployee(), HttpStatus.OK);
     }
 
-    @GetMapping("/employee/{empid}")
-    private Employee getEmployee(@PathVariable("empid") int empid) {
-        return employeeService.getEmployeeById(empid);
+    @GetMapping("/employee/{empId}")
+    private ResponseEntity<Employee> getEmployee(@PathVariable("empId") int empId) {
+        return new ResponseEntity<>(employeeService.getEmployeeById(empId)
+                .orElseThrow(() -> new RuntimeException("Employee Not Found")), HttpStatus.OK);
     }
 
-    @DeleteMapping("/employee/{empid}")
-    private void deleteEmployee(@PathVariable("empid") int empid) {
-        employeeService.delete(empid);
+    @DeleteMapping("/employee/{empId}")
+    private ResponseEntity<HttpStatus> deleteEmployee(@PathVariable("empId") int empId) {
+        employeeService.delete(empId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PutMapping("/employee")
-    private String update(@RequestBody EmployeeJson employeeJson) {
-        Employee existingEmployee = employeeRepository.findById(employeeJson.getEmpId())
-                .orElseThrow(() -> new RuntimeException("Employee Not found"));
-        existingEmployee.setEmpDesignation(employeeJson.getEmpDesignation());
-        existingEmployee.setEmpName(employeeJson.getEmpName());
-        existingEmployee.setEmpEmail(employeeJson.getEmpEmail());
-        employeeService.saveOrUpdate(existingEmployee);
-        return "Suceess";
+    @PutMapping("/employee/{empId}")
+    private ResponseEntity<HttpStatus> update(@PathVariable("empId") int empId, @RequestBody EmployeeJson employeeJson) {
+        employeeService.saveOrUpdate(employeeJson, empId);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping("/employee")
-    private String saveEmployee(@RequestBody EmployeeJson employeeJson) {
-        Employee employee = new Employee();
-        employee.setEmpId(employeeJson.getEmpId());
-        employee.setEmpEmail(employeeJson.getEmpEmail());
-        employee.setEmpName(employeeJson.getEmpName());
-        employee.setEmpDesignation(employeeJson.getEmpDesignation());
-        employeeService.save(employee);
-        return "Success";
+    private ResponseEntity<HttpStatus> saveEmployee(@RequestBody EmployeeJson employeeJson) {
+        employeeService.save(employeeJson);
+        return new ResponseEntity<>(HttpStatus.CREATED);
 
 
     }

@@ -2,40 +2,55 @@ package com.management.employee.service;
 
 import com.management.employee.Repository.EmployeeRepository;
 import com.management.employee.model.Employee;
+import com.management.employee.rest.json.EmployeeJson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 @Service
 public class EmployeeService {
+
     @Autowired
-    EmployeeRepository employeeRepository;
+    private EmployeeRepository employeeRepository;
 
     public List<Employee> getAllEmployee() {
-        List<Employee> employee = new ArrayList<Employee>();
-        employeeRepository.findAll().forEach(employee1 -> employee.add(employee1));
-        return employee;
+        List<Employee> employees = new ArrayList<Employee>();
+        employeeRepository.findAll().forEach(employees::add);
+        return employees;
     }
-       public Employee getEmployeeById(int empId)
-       {
-            return employeeRepository.findById(empId).get();
-        }
 
-        public void saveOrUpdate(Employee employee)
-        {
-            employeeRepository.save(employee);
-        }
+    public Optional<Employee> getEmployeeById(int empId) {
+        return employeeRepository.findById(empId);
+    }
 
-        //deleting a specific record by using the method deleteById() of CrudRepository
-        public  void delete(int empId) {
-            employeeRepository.deleteById(empId);
+    public void saveOrUpdate(EmployeeJson employeeJson, int empId) {
+        Employee existingEmployee = getEmployeeById(empId)
+                .orElseThrow(() -> new RuntimeException("Employee Not found"));
+        existingEmployee.setEmpDesignation(employeeJson.getEmpDesignation());
+        existingEmployee.setEmpName(employeeJson.getEmpName());
+        existingEmployee.setEmpEmail(employeeJson.getEmpEmail());
+        employeeRepository.save(existingEmployee);
+    }
 
-        }
 
-        public void save(Employee employee) {
-            employeeRepository.save(employee);
-        }
+    public void delete(int empId) {
+        getEmployeeById(empId)
+                .orElseThrow(() -> new RuntimeException("Employee Not found"));
+        employeeRepository.deleteById(empId);
+
+    }
+
+    public void save(EmployeeJson employeeJson) {
+        Employee employee = new Employee();
+        employee.setEmpId(employeeJson.getEmpId());
+        employee.setEmpEmail(employeeJson.getEmpEmail());
+        employee.setEmpName(employeeJson.getEmpName());
+        employee.setEmpDesignation(employeeJson.getEmpDesignation());
+        employeeRepository.save(employee);
+    }
 
 
 }
